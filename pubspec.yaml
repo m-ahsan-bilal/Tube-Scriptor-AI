@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   gotrue: ^2.11.1
   go_router: ^14.6.3
+  google_generative_ai: ^0.4.6
 
 dev_dependencies:
   flutter_test:

@@ -40,7 +40,3 @@ List<RouteBase> appRoutesList = [
     builder: (context, state) => const SettingsPage(),
   ),
 ];
-
-class LandingPage {
-  const LandingPage();
-}
