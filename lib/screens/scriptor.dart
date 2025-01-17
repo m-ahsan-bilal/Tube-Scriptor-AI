@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tube_scriptor_ai/utils/app%20resources/app_resources.dart';
 
 class ScriptorPage extends StatelessWidget {
   const ScriptorPage({super.key});
@@ -6,7 +7,10 @@ class ScriptorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.cyan.shade400,
+      decoration: BoxDecoration(gradient: AppResources.colors.gradient1),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+      ),
     );
   }
 }
