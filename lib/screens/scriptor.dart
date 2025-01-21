@@ -1,5 +1,6 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:tube_scriptor_ai/utils/app%20resources/app_resources.dart';
 
@@ -66,6 +67,9 @@ class _ScriptorPageState extends State<ScriptorPage> {
           backgroundColor: Colors.cyan,
           elevation: 0.7,
         ),
+        floatingActionButton: FloatingActionButton.extended(
+            onPressed: () => context.go("/cam"),
+            label: Icon(Icons.camera_alt_sharp)),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
