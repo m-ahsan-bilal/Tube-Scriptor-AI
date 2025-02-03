@@ -2,7 +2,8 @@ import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
-import 'package:tube_scriptor_ai/utils/app%20resources/app_resources.dart';
+
+import '../utils/app resources/app_resources.dart';
 
 class ScriptorPage extends StatefulWidget {
   const ScriptorPage({super.key});
