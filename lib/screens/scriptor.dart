@@ -1,8 +1,7 @@
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_generative_ai/google_generative_ai.dart';
-
+import 'package:tube_scriptor_ai/models/api_service.dart';
 import '../utils/app resources/app_resources.dart';
 
 class ScriptorPage extends StatefulWidget {
@@ -14,20 +13,19 @@ class ScriptorPage extends StatefulWidget {
 
 class _ScriptorPageState extends State<ScriptorPage> {
   final scriptController = TextEditingController();
-  final GenerativeModel model = GenerativeModel(
-    model: "gemini-pro",
-    apiKey: "AIzaSyChd40HjxUtB0FXNqXh-FuGp2duXDpcGrQ",
-  );
+  final ScriptGeneratorService _scriptService =
+      ScriptGeneratorService(); // Initialize API service
 
   String? generatedScript;
   bool isLoading = false;
 
+  /// Fetch script using the new service class
   Future<void> generateScript() async {
     final userInput = scriptController.text.trim();
 
     if (userInput.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please enter a prompt!")),
+        const SnackBar(content: Text("Please enter a prompt!")),
       );
       return;
     }
@@ -37,23 +35,13 @@ class _ScriptorPageState extends State<ScriptorPage> {
       generatedScript = null;
     });
 
-    try {
-      final content = [Content.text(userInput)];
-      final response = await model.generateContent(content);
+    // Call API using the new class
+    String? response = await _scriptService.generateScript(userInput);
 
-      setState(() {
-        generatedScript = response.text;
-      });
-    } catch (error) {
-      setState(() {
-        generatedScript = "Failed to generate script. Please try again.";
-      });
-      debugPrint("Error generating content: $error");
-    } finally {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    setState(() {
+      generatedScript = response;
+      isLoading = false;
+    });
   }
 
   @override
@@ -64,13 +52,13 @@ class _ScriptorPageState extends State<ScriptorPage> {
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           centerTitle: true,
-          title: Text("Script Page"),
+          title: const Text("Script Page"),
           backgroundColor: Colors.cyan,
           elevation: 0.7,
         ),
         floatingActionButton: FloatingActionButton.extended(
             onPressed: () => context.go("/cam"),
-            label: Icon(Icons.camera_alt_sharp)),
+            label: const Icon(Icons.camera_alt_sharp)),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -80,49 +68,49 @@ class _ScriptorPageState extends State<ScriptorPage> {
                 animatedTexts: [
                   TyperAnimatedText(
                     "Generate your YouTube scripts in one click!",
-                    textStyle: TextStyle(
+                    textStyle: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
-                    speed: Duration(milliseconds: 100),
+                    speed: const Duration(milliseconds: 100),
                     curve: Curves.fastOutSlowIn,
                   ),
                 ],
                 totalRepeatCount: 1,
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: scriptController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Enter your prompt here!',
                   border: OutlineInputBorder(),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
                   onPressed: isLoading ? null : generateScript,
                   child: isLoading
-                      ? CircularProgressIndicator(color: Colors.white)
-                      : Text("Generate Script"),
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text("Generate Script"),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               if (generatedScript != null) ...[
-                Divider(),
-                Text(
+                const Divider(),
+                const Text(
                   "Generated Script:",
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Text(
                       generatedScript!,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
                   ),
                 ),
