@@ -1,4 +1,7 @@
 allprojects {
+     tasks.withType(JavaCompile).configureEach {
+        it.options.release.set(17)
+    }
     repositories {
         google()
         mavenCentral()
@@ -16,3 +19,5 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
+
+

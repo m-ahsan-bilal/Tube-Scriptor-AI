@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:tube_scriptor_ai/landing/splash_screen.dart';
-import 'package:tube_scriptor_ai/screens/cam.dart';
+import 'package:tube_scriptor_ai/main.dart';
 import 'package:tube_scriptor_ai/screens/home.dart';
+import 'package:tube_scriptor_ai/screens/photo_screen.dart';
 import 'package:tube_scriptor_ai/screens/scriptor.dart';
 import 'package:tube_scriptor_ai/screens/settings_page.dart';
 
@@ -43,6 +44,6 @@ List<RouteBase> appRoutesList = [
   GoRoute(
     path: "/cam",
     name: "cam page",
-    builder: (context, state) => const CameraPage(),
+    builder: (context, state) => PhotoScreen(cameras),
   ),
 ];
