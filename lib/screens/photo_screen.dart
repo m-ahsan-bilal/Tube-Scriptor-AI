@@ -1,13 +1,14 @@
-
 import 'dart:io';
 
 // import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart' as pathProvider;
 
 import 'package:flutter/material.dart';
+import 'package:syncfusion_flutter_sliders/sliders.dart';
 
 class PhotoScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -29,7 +30,8 @@ class _PhotoScreenState extends State<PhotoScreen> {
   File? _capturedImage;
   int cameraIndex = 0;
 
-  // AssetsAudioPlayer _audioPlayer = AssetsAudioPlayer();
+// audio pakcgae get for  sound effects
+  final player = AudioPlayer();
 
   @override
   void initState() {
@@ -43,6 +45,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
     });
   }
 
+// flash light
   void _toggleFlashLight() {
     if (_isFlashOn) {
       controller.setFlashMode(FlashMode.off);
@@ -57,6 +60,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
     }
   }
 
+// switch camera back or front
   void _switchCamera() async {
     if (controller != null) {
       // dispose the current controller to release the sam resource
@@ -68,6 +72,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
     _initCamera(_selectedCameraIndex);
   }
 
+// initiliaze the cam
   Future<void> _initCamera(int selectedCameraIndex) async {
     controller = CameraController(
         widget.cameras[selectedCameraIndex], ResolutionPreset.max);
@@ -106,14 +111,54 @@ class _PhotoScreenState extends State<PhotoScreen> {
       String imagePath = capturedImage.path;
       await GallerySaver.saveImage(imagePath);
       debugPrint(" photi captures and saved in gallery");
-
+      // play shutter sound effect
+      await player.setAsset('assets/camera_shutter.mp3');
+      player.play();
       debugPrint("Image Path: $imagePath");
+
+      final String filePath =
+          "$capturePath/${DateTime.now().millisecondsSinceEpoch}.jpg";
+      _capturedImage = File(capturedImage.path);
+      _capturedImage!.renameSync(filePath);
     } catch (e) {
       debugPrint("Error Message: $e");
     } finally {
       setState(() {
         isCapturing = false;
       });
+    }
+  }
+
+  // zoom camera
+  void zoomCamera(double value) {
+    setState(() {
+      _currentZoom = value;
+      controller.setZoomLevel(value);
+    });
+  }
+
+// focus point
+
+  Future<void> _setFocusPoint(Offset point) async {
+    if (controller != null && controller.value.isInitialized) {
+      try {
+        final double x = point.dx.clamp(0.0, 1.0);
+        final double y = point.dy.clamp(0.0, 1.0);
+        await controller.setFocusPoint(Offset(x, y));
+        await controller.setFocusPoint(FocusMode.auto as Offset?);
+        setState(() {
+          _focusPoint = Offset(x, y);
+        });
+
+        // Reset _focus point after 1 second to to remove the square
+
+        await Future.delayed(Duration(seconds: 2));
+        setState(() {
+          _focusPoint = null;
+        });
+      } catch (e) {
+        debugPrint("Error Message: $e");
+      }
     }
   }
 
@@ -172,17 +217,60 @@ class _PhotoScreenState extends State<PhotoScreen> {
                   ),
                 ),
               ),
-              if (controller.value.isInitialized)
-                Positioned.fill(
-                  top: 40,
-                  bottom: _isFrontCamera ? 150 : 0,
-                  child: AspectRatio(
-                    aspectRatio: controller.value.aspectRatio,
-                    child: CameraPreview(controller),
-                  ),
-                )
-              else
-                Center(child: CircularProgressIndicator()),
+              controller.value.isInitialized
+                  ? Positioned.fill(
+                      top: 40,
+                      bottom: _isFrontCamera ? 150 : 0,
+                      child: AspectRatio(
+                        aspectRatio: controller.value.aspectRatio,
+                        child: GestureDetector(
+                            onTapDown: (TapDownDetails details) {
+                              final Offset tapPosition = details.localPosition;
+                              final Offset relativeTapPosition = Offset(
+                                tapPosition.dx / constraints.maxWidth,
+                                tapPosition.dx / constraints.maxHeight,
+                              );
+                              _setFocusPoint(relativeTapPosition);
+                            },
+                            child: CameraPreview(controller)),
+                      ),
+                    )
+                  : Center(child: CircularProgressIndicator()),
+              Positioned(
+                top: 50,
+                right: 10,
+                child: SfSlider.vertical(
+                  min: 1.0,
+                  max: 5.0,
+                  activeColor: Colors.white,
+                  value: _currentZoom,
+                  onChanged: (dynamic value) {
+                    setState(() {
+                      zoomCamera(value);
+                    });
+                  },
+                ),
+              ),
+              _focusPoint != null
+                  ? Positioned.fill(
+                      top: 50,
+                      child: Align(
+                        alignment: Alignment(
+                          _focusPoint!.dx * 2 - 1,
+                          _focusPoint!.dy * 2 - 1,
+                        ),
+                        child: Container(
+                          height: 80,
+                          width: 80,
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.white10, width: 2),
+                          ),
+                        ),
+                      ),
+                    )
+                  : SizedBox(
+                      height: 1,
+                    ),
               Positioned(
                 bottom: 0,
                 right: 0,
@@ -218,7 +306,22 @@ class _PhotoScreenState extends State<PhotoScreen> {
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Expanded(child: Container()),
+                            Expanded(
+                                child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _capturedImage != null
+                                    ? Container(
+                                        width: 50,
+                                        height: 50,
+                                        child: Image.file(
+                                          _capturedImage!,
+                                          fit: BoxFit.cover,
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            )),
                             Expanded(
                               child: GestureDetector(
                                 onTap: () {

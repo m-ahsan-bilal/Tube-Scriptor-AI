@@ -45,12 +45,13 @@ dependencies:
   permission_handler: ^11.3.1
   url_launcher: ^6.3.1
   flutter_xlider: ^3.5.0
-  assets_audio_player: ^3.1.1
+  # assets_audio_player: ^3.0.6
   video_player: ^2.9.2
   syncfusion_flutter_sliders: ^28.2.3
   image_picker: ^1.1.2
   image: ^4.5.2
   scrollable_positioned_list: ^0.3.8
+  just_audio: ^0.9.46
  
   
  
@@ -82,8 +83,8 @@ flutter:
   uses-material-design: true
 
   # To add assets to your application, add an assets section, like this:
-  # assets:
-  #   - images/a_dot_burr.jpeg
+  assets:
+   - assets/music/shutter.mp3
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see
