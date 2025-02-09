@@ -1,6 +1,7 @@
+
 import 'dart:io';
 
-import 'package:assets_audio_player/assets_audio_player.dart';
+// import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
 import 'package:path/path.dart' as path;
@@ -28,7 +29,7 @@ class _PhotoScreenState extends State<PhotoScreen> {
   File? _capturedImage;
   int cameraIndex = 0;
 
-  AssetsAudioPlayer _audioPlayer = AssetsAudioPlayer();
+  // AssetsAudioPlayer _audioPlayer = AssetsAudioPlayer();
 
   @override
   void initState() {

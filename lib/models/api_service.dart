@@ -8,15 +8,15 @@ class ScriptGeneratorService {
     apiKey: "AIzaSyChd40HjxUtB0FXNqXh-FuGp2duXDpcGrQ",
   );
 
-  /// Fetches a script based on user input
+  // Fetches a script based on user input
   Future<String?> generateScript(String userInput) async {
     if (userInput.isEmpty) return "Please enter a valid prompt!";
-
+// try catch block
     try {
       final content = [Content.text(userInput)];
       final response = await _model.generateContent(content);
-
-      return response.text; // Return generated script
+// return scriot
+      return response.text;
     } catch (error) {
       debugPrint("Error generating script: $error");
       return "Failed to generate script. Please try again.";

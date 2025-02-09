@@ -143,8 +143,9 @@ class _ScriptorPageState extends State<ScriptorPage> {
                     // Dropdowns
                     DropdownButtonFormField<String>(
                       value: selectedTone,
-                      decoration:
-                          const InputDecoration(labelText: "Select Tone"),
+                      decoration: InputDecoration(
+                          labelText: "Select Tone",
+                          fillColor: AppResources.colors.tealLight),
                       items: toneOptions.map((tone) {
                         return DropdownMenuItem(value: tone, child: Text(tone));
                       }).toList(),
@@ -170,8 +171,10 @@ class _ScriptorPageState extends State<ScriptorPage> {
 
                     DropdownButtonFormField<String>(
                       value: selectedLength,
-                      decoration:
-                          const InputDecoration(labelText: "Select Length"),
+                      decoration: InputDecoration(
+                          labelText: "Select Length",
+                          fillColor: AppResources.colors.tealLight,
+                          hoverColor: Colors.black87),
                       items: lengthOptions.map((length) {
                         return DropdownMenuItem(
                             value: length, child: Text(length));
@@ -212,7 +215,7 @@ class _ScriptorPageState extends State<ScriptorPage> {
                         TypewriterAnimatedText(
                           generatedScript!,
                           textStyle: const TextStyle(fontSize: 16),
-                          speed: const Duration(milliseconds: 30),
+                          speed: const Duration(milliseconds: 40),
                         ),
                       ],
                       repeatForever: false,
