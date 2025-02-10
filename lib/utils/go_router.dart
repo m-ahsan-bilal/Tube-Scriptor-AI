@@ -6,6 +6,7 @@ import 'package:tube_scriptor_ai/screens/home.dart';
 import 'package:tube_scriptor_ai/screens/photo_screen.dart';
 import 'package:tube_scriptor_ai/screens/scriptor.dart';
 import 'package:tube_scriptor_ai/screens/settings_page.dart';
+import 'package:tube_scriptor_ai/screens/video_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GoRouter basicRoutes = GoRouter(
@@ -45,5 +46,10 @@ List<RouteBase> appRoutesList = [
     path: "/cam",
     name: "cam page",
     builder: (context, state) => PhotoScreen(cameras),
+  ),
+  GoRoute(
+    path: "/video_screen",
+    name: "video page",
+    builder: (context, state) => VideoScreen(cameras),
   ),
 ];

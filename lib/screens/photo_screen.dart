@@ -1,14 +1,11 @@
 import 'dart:io';
-
-// import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:camera/camera.dart';
 import 'package:gallery_saver/gallery_saver.dart';
+import 'package:go_router/go_router.dart';
 import 'package:just_audio/just_audio.dart';
-import 'package:path/path.dart' as path;
-import 'package:path_provider/path_provider.dart' as pathProvider;
-
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_sliders/sliders.dart';
+import 'package:tube_scriptor_ai/widgets/vertical_slider.dart';
 
 class PhotoScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -20,7 +17,7 @@ class PhotoScreen extends StatefulWidget {
 }
 
 class _PhotoScreenState extends State<PhotoScreen> {
-  late CameraController controller;
+  CameraController? controller;
   bool isCapturing = false;
   int _selectedCameraIndex = 0;
   bool _isFrontCamera = false;
@@ -29,142 +26,132 @@ class _PhotoScreenState extends State<PhotoScreen> {
   double _currentZoom = 1.0;
   File? _capturedImage;
   int cameraIndex = 0;
-
-// audio pakcgae get for  sound effects
-  final player = AudioPlayer();
+  double _brightness = 0.5; // Brightness control
+  final player = AudioPlayer(); // Audio player for shutter sound
 
   @override
   void initState() {
     super.initState();
-    controller = CameraController(widget.cameras[0], ResolutionPreset.max);
-    controller.initialize().then((_) {
-      if (!mounted) {
-        return;
-      }
-      setState(() {});
-    });
-  }
-
-// flash light
-  void _toggleFlashLight() {
-    if (_isFlashOn) {
-      controller.setFlashMode(FlashMode.off);
-      setState(() {
-        _isFlashOn = false;
-      });
-    } else {
-      controller.setFlashMode(FlashMode.torch);
-      setState(() {
-        _isFlashOn = true;
-      });
-    }
-  }
-
-// switch camera back or front
-  void _switchCamera() async {
-    if (controller != null) {
-      // dispose the current controller to release the sam resource
-      await controller.dispose();
-    }
-    // increment or reset the selected camera index
-    _selectedCameraIndex = (_selectedCameraIndex + 1) % widget.cameras.length;
-    // iniliaze the new camera
     _initCamera(_selectedCameraIndex);
   }
 
-// initiliaze the cam
   Future<void> _initCamera(int selectedCameraIndex) async {
+    if (!mounted) return; // Ensure the widget is still mounted
+
+    // Dispose the previous controller if it exists
+    if (controller != null && controller!.value.isInitialized) {
+      await controller!.dispose();
+    }
+
+    // Initialize the new camera controller
     controller = CameraController(
-        widget.cameras[selectedCameraIndex], ResolutionPreset.max);
+      widget.cameras[selectedCameraIndex],
+      ResolutionPreset.max,
+    );
+
     try {
-      await controller.initialize();
+      await controller!.initialize();
+      if (!mounted) return; // Ensure the widget is still mounted
       setState(() {
-        _isFrontCamera = selectedCameraIndex == 1; // Change based on index
+        _isFrontCamera = selectedCameraIndex == 1;
       });
     } catch (e) {
-      debugPrint("Error Message: $e");
-    }
-    if (mounted) {
-      setState(() {});
+      debugPrint("❌ Camera Initialization Error: $e");
     }
   }
 
-//  photo click
-  void capturePhoto() async {
-    if (!controller.value.isInitialized) {
-      return;
+  void _toggleFlashLight() {
+    if (controller == null || !controller!.value.isInitialized) return;
+
+    if (_isFlashOn) {
+      controller!.setFlashMode(FlashMode.off);
+    } else {
+      controller!.setFlashMode(FlashMode.torch);
+    }
+    setState(() => _isFlashOn = !_isFlashOn);
+  }
+
+  void _switchCamera() async {
+    if (!mounted) return; // Ensure the widget is still mounted
+
+    // Dispose the current controller
+    if (controller != null && controller!.value.isInitialized) {
+      await controller!.dispose();
     }
 
-    final Directory appDir =
-        await pathProvider.getApplicationDocumentsDirectory();
-    final String capturePath = path.join(appDir.path, '${DateTime.now()}.jpg');
+    // Switch to the next camera
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % widget.cameras.length;
+    await _initCamera(_selectedCameraIndex);
+  }
 
-    if (controller.value.isTakingPicture) {
+  Future<void> capturePhoto() async {
+    if (controller == null ||
+        !controller!.value.isInitialized ||
+        controller!.value.isTakingPicture) {
       return;
     }
 
     try {
-      setState(() {
-        isCapturing = true;
-      });
-      final XFile capturedImage = await controller.takePicture();
+      setState(() => isCapturing = true);
+      final XFile capturedImage = await controller!.takePicture();
       String imagePath = capturedImage.path;
       await GallerySaver.saveImage(imagePath);
-      debugPrint(" photi captures and saved in gallery");
-      // play shutter sound effect
-      await player.setAsset('assets/camera_shutter.mp3');
-      player.play();
-      debugPrint("Image Path: $imagePath");
+      debugPrint("📸 Photo Captured & Saved: $imagePath");
 
-      final String filePath =
-          "$capturePath/${DateTime.now().millisecondsSinceEpoch}.jpg";
-      _capturedImage = File(capturedImage.path);
-      _capturedImage!.renameSync(filePath);
-    } catch (e) {
-      debugPrint("Error Message: $e");
-    } finally {
+      // Play shutter sound effect
+      try {
+        await player.setAsset('assets/camera_shutter.mp3');
+        await player.play();
+      } catch (e) {
+        debugPrint("❌ Audio Player Error: $e");
+      }
+
       setState(() {
-        isCapturing = false;
+        _capturedImage = File(imagePath);
       });
+    } catch (e) {
+      debugPrint("❌ Capture Error: $e");
+    } finally {
+      setState(() => isCapturing = false);
     }
   }
 
-  // zoom camera
   void zoomCamera(double value) {
+    if (controller == null || !controller!.value.isInitialized) return;
+
     setState(() {
       _currentZoom = value;
-      controller.setZoomLevel(value);
+      controller!.setZoomLevel(value);
     });
   }
 
-// focus point
-
   Future<void> _setFocusPoint(Offset point) async {
-    if (controller != null && controller.value.isInitialized) {
-      try {
-        final double x = point.dx.clamp(0.0, 1.0);
-        final double y = point.dy.clamp(0.0, 1.0);
-        await controller.setFocusPoint(Offset(x, y));
-        await controller.setFocusPoint(FocusMode.auto as Offset?);
-        setState(() {
-          _focusPoint = Offset(x, y);
-        });
+    if (controller == null || !controller!.value.isInitialized) return;
 
-        // Reset _focus point after 1 second to to remove the square
+    try {
+      final double x = point.dx.clamp(0.0, 1.0);
+      final double y = point.dy.clamp(0.0, 1.0);
+      await controller!.setFocusPoint(Offset(x, y));
 
-        await Future.delayed(Duration(seconds: 2));
-        setState(() {
-          _focusPoint = null;
-        });
-      } catch (e) {
-        debugPrint("Error Message: $e");
-      }
+      setState(() {
+        _focusPoint = Offset(x, y);
+      });
+
+      await Future.delayed(Duration(seconds: 2));
+      setState(() {
+        _focusPoint = null;
+      });
+    } catch (e) {
+      debugPrint("❌ Focus Error: $e");
     }
   }
 
   @override
   void dispose() {
-    controller.dispose();
+    if (controller != null && controller!.value.isInitialized) {
+      controller!.dispose();
+    }
+    player.dispose();
     super.dispose();
   }
 
@@ -172,199 +159,178 @@ class _PhotoScreenState extends State<PhotoScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: LayoutBuilder(
-            builder: (BuildContext context, BoxConstraints constraints) {
-          return Stack(
-            children: [
-              Positioned(
-                top: 0,
-                right: 0,
-                left: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.black,
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                            onTap: () {
-                              _toggleFlashLight();
-                            },
-                            child: _isFlashOn == false
-                                ? Icon(
-                                    Icons.flash_off,
-                                    color: Colors.white,
-                                  )
-                                : Icon(
-                                    Icons.flash_on,
-                                    color: Colors.white,
-                                  )),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: GestureDetector(
-                          onTap: () {},
-                          child: Icon(
-                            Icons.qr_code_scanner,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            // Camera Preview
+            if (controller != null && controller!.value.isInitialized)
+              Positioned.fill(
+                child: GestureDetector(
+                  onTapDown: (TapDownDetails details) {
+                    _setFocusPoint(details.localPosition);
+                  },
+                  child: CameraPreview(controller!),
                 ),
               ),
-              controller.value.isInitialized
-                  ? Positioned.fill(
-                      top: 40,
-                      bottom: _isFrontCamera ? 150 : 0,
-                      child: AspectRatio(
-                        aspectRatio: controller.value.aspectRatio,
-                        child: GestureDetector(
-                            onTapDown: (TapDownDetails details) {
-                              final Offset tapPosition = details.localPosition;
-                              final Offset relativeTapPosition = Offset(
-                                tapPosition.dx / constraints.maxWidth,
-                                tapPosition.dx / constraints.maxHeight,
-                              );
-                              _setFocusPoint(relativeTapPosition);
-                            },
-                            child: CameraPreview(controller)),
+
+            // Back Button
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 70,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(.8),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                        color: Colors.white,
+                        size: 25,
+                        opticalSize: 20,
                       ),
-                    )
-                  : Center(child: CircularProgressIndicator()),
-              Positioned(
-                top: 50,
-                right: 10,
+                      onPressed: _toggleFlashLight,
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.close_outlined,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                      onPressed: () => context.go('/scriptor'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            // Zoom Slider
+
+            // Positioned(
+            //   right: 20,
+            //   top: 100,
+            //   bottom: 100,
+            //   child: VerticalSlider(
+            //     min: 1.0,
+            //     max: 10.0,
+            //     onChanged: (value) async {
+            //       setState(() {
+            //         _currentZoom = value;
+            //       });
+            //       await widget.controller.setZoomLevel(_zoomLevel);
+            //     },
+            //   ),
+            // ),
+            Positioned(
+              right: 100,
+              left: 100,
+              bottom: 150,
+              child: RotatedBox(
+                quarterTurns: 1,
                 child: SfSlider.vertical(
                   min: 1.0,
-                  max: 5.0,
-                  activeColor: Colors.white,
+                  max: 3.0,
+                  activeColor: Colors.white60,
                   value: _currentZoom,
                   onChanged: (dynamic value) {
-                    setState(() {
-                      zoomCamera(value);
-                    });
+                    zoomCamera(value);
                   },
                 ),
               ),
-              _focusPoint != null
-                  ? Positioned.fill(
-                      top: 50,
-                      child: Align(
-                        alignment: Alignment(
-                          _focusPoint!.dx * 2 - 1,
-                          _focusPoint!.dy * 2 - 1,
-                        ),
-                        child: Container(
-                          height: 80,
-                          width: 80,
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.white10, width: 2),
+            ),
+
+            // Focus Indicator
+            if (_focusPoint != null)
+              Positioned(
+                top: _focusPoint!.dy * MediaQuery.of(context).size.height,
+                left: _focusPoint!.dx * MediaQuery.of(context).size.width,
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.white, width: 2),
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              ),
+
+            // Bottom Controls
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 140,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Captured Image/Video Preview
+                      _capturedImage != null
+                          ? Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.black87, width: 1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Image.file(
+                                _capturedImage!,
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Container(
+                              width: 50,
+                              height: 50,
+                              decoration: BoxDecoration(
+                                border:
+                                    Border.all(color: Colors.black87, width: 1),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+
+                      // Shutter Button
+                      Center(
+                        child: GestureDetector(
+                          onTap: capturePhoto,
+                          child: Container(
+                            width: 70,
+                            height: 70,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                color: Colors.white,
+                                width: 2,
+                              ),
+                            ),
+                            child: Icon(
+                              Icons.camera,
+                              color: Colors.white,
+                              size: 40,
+                            ),
                           ),
                         ),
                       ),
-                    )
-                  : SizedBox(
-                      height: 1,
-                    ),
-              Positioned(
-                bottom: 0,
-                right: 0,
-                left: 0,
-                child: Container(
-                  height: 150,
-                  decoration: BoxDecoration(
-                    color: _isFrontCamera ? Colors.black45 : Colors.black,
-                  ),
-                  child: Column(
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(10.0),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Text("Video",
-                                style: TextStyle(color: Colors.white)),
-                            Text("Photo",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                            Text("Pro Mode",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                )),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: [
-                            Expanded(
-                                child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                _capturedImage != null
-                                    ? Container(
-                                        width: 50,
-                                        height: 50,
-                                        child: Image.file(
-                                          _capturedImage!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      )
-                                    : Container(),
-                              ],
-                            )),
-                            Expanded(
-                              child: GestureDetector(
-                                onTap: () {
-                                  capturePhoto();
-                                },
-                                child: Center(
-                                  child: Container(
-                                    width: 70,
-                                    height: 70,
-                                    decoration: BoxDecoration(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(50),
-                                      border: Border.all(
-                                        color: Colors.white,
-                                        width: 4,
-                                        style: BorderStyle.solid,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                                child: GestureDetector(
-                              onTap: () {
-                                _switchCamera();
-                              },
-                              child: Icon(
-                                Icons.cameraswitch_sharp,
-                                color: Colors.white,
-                                size: 40.0,
-                              ),
-                            )),
-                          ],
-                        ),
-                      ),
+                      IconButton(
+                        icon: Icon(Icons.cameraswitch, color: Colors.white),
+                        onPressed: _switchCamera,
+                      )
                     ],
                   ),
                 ),
               ),
-            ],
-          );
-        }),
+            ),
+          ],
+        ),
       ),
     );
   }
