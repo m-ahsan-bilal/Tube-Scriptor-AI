@@ -9,7 +9,6 @@ class ScriptGeneratorService {
     model: "gemini-pro",
     apiKey: "AIzaSyChd40HjxUtB0FXNqXh-FuGp2duXDpcGrQ",
   );
-
   // Fetches a script based on user input
   Future<String?> generateScript(String userInput) async {
     if (userInput.isEmpty) return "Please enter a valid prompt!";
