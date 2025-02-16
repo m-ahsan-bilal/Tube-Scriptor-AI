@@ -26,10 +26,8 @@ class _ScriptorPageState extends State<ScriptorPage> {
   String selectedTone = "Professional";
   String selectedStyle = "Storytelling";
   String selectedLength = "Short (1-2 min)";
-  String selectedAgeGroup =
-      "18-25"; // Ensure this matches an item in ageGroupOptions
-  String selectedVideoType =
-      "Explainer"; // Ensure this matches an item in videoTypeOptions
+  String selectedAgeGroup = "18-25";
+  String selectedVideoType = "Explainer";
 
   // Dropdown options
   final List<String> toneOptions = [
@@ -50,10 +48,10 @@ class _ScriptorPageState extends State<ScriptorPage> {
     "Long (6+ min)"
   ];
   final List<String> ageGroupOptions = [
-    "13-17",
-    "18-25",
-    "26-35",
-    "36-45",
+    "12-17",
+    "18-30",
+    "30-40",
+    "40-45",
     "46+"
   ];
   final List<String> videoTypeOptions = [
@@ -67,14 +65,14 @@ class _ScriptorPageState extends State<ScriptorPage> {
   @override
   void initState() {
     super.initState();
-    // Debugging: Print initial values and options
+    // print deafult values
     debugPrint("Selected Age Group: $selectedAgeGroup");
     debugPrint("Selected Video Type: $selectedVideoType");
     debugPrint("Age Group Options: $ageGroupOptions");
     debugPrint("Video Type Options: $videoTypeOptions");
   }
 
-  /// Generate a full prompt based on user selections
+// generate prompt
   String buildPrompt() {
     String topic = scriptController.text.trim();
 
@@ -83,13 +81,14 @@ class _ScriptorPageState extends State<ScriptorPage> {
         "Include a call-to-action at the end and use engaging visuals.";
 
     return """
+I am a Youtuber and I want to create a video about $topic.
 Generate a ${selectedTone.toLowerCase()} YouTube script in a ${selectedStyle.toLowerCase()} style 
 for a video about '$topic'. The target audience is ${selectedAgeGroup} years old, and the video type is ${selectedVideoType}. 
 Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
 """;
   }
 
-  /// Fetch script using the service class
+  // Fetch script using the service class
   Future<void> generateScript() async {
     final String userPrompt = buildPrompt();
 

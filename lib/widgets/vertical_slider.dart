@@ -6,11 +6,11 @@ class VerticalSlider extends StatefulWidget {
   final ValueChanged<double> onChanged;
 
   const VerticalSlider({
-    Key? key,
+    super.key,
     required this.min,
     required this.max,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   @override
   _VerticalSliderState createState() => _VerticalSliderState();

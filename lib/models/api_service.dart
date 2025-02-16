@@ -13,10 +13,11 @@ class ScriptGeneratorService {
   // Fetches a script based on user input
   Future<String?> generateScript(String userInput) async {
     if (userInput.isEmpty) return "Please enter a valid prompt!";
-// try catch block
+// try catch
     try {
       final content = [Content.text(userInput)];
       final response = await _model.generateContent(content);
+
 // return scriot
       return response.text;
     } catch (error) {
