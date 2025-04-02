@@ -82,8 +82,8 @@ class _ScriptorPageState extends State<ScriptorPage> {
 
     return """
 I am a Youtuber and I want to create a video about $topic.
-Generate a ${selectedTone.toLowerCase()} YouTube script in a ${selectedStyle.toLowerCase()} style 
-for a video about '$topic'. The target audience is ${selectedAgeGroup} years old, and the video type is ${selectedVideoType}. 
+Generate a $selectedTone.toLowerCase() YouTube script in a $selectedStyle.toLowerCase() style 
+for a video about '$topic'. The target audience is $selectedAgeGroup years old, and the video type is $selectedVideoType. 
 Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
 """;
   }
@@ -172,6 +172,7 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
                         labelText: 'Enter your video topic',
                         border: OutlineInputBorder(),
                       ),
+                      onFieldSubmitted: (_) => generateScript(),
                     ),
                     const SizedBox(height: 16),
 
