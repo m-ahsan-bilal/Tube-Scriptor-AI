@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:tube_scriptor_ai/models/api_service.dart';
+import 'package:tube_scriptor_ai/widgets/dropdown.dart';
 
 import '../utils/app resources/app_resources.dart';
 
@@ -14,9 +15,15 @@ class ScriptorPage extends StatefulWidget {
 }
 
 class _ScriptorPageState extends State<ScriptorPage> {
-  final scriptController = TextEditingController();
-  final ScriptGeneratorService _scriptService = ScriptGeneratorService();
+  // keys
 
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  // controllerrs
+  final scriptController = TextEditingController();
+
+  // services
+  final ScriptGeneratorService _scriptService = ScriptGeneratorService();
+//  variables
   String? generatedScript;
   bool isLoading = false;
 
@@ -49,7 +56,7 @@ class _ScriptorPageState extends State<ScriptorPage> {
   ];
   final List<String> ageGroupOptions = [
     "12-17",
-    "18-30",
+    "18-25",
     "30-40",
     "40-45",
     "46+"
@@ -90,11 +97,12 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
 
   // Fetch script using the service class
   Future<void> generateScript() async {
-    final String userPrompt = buildPrompt();
-
-    if (userPrompt.isEmpty) {
+    if (scriptController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a topic!")),
+        const SnackBar(
+          content: Text("Please enter a topic!"),
+          backgroundColor: Colors.red,
+        ),
       );
       return;
     }
@@ -103,6 +111,8 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
       isLoading = true;
       generatedScript = null;
     });
+
+    final String userPrompt = buildPrompt();
 
     // Call API using the service class
     String? response = await _scriptService.generateScript(userPrompt);
@@ -113,10 +123,10 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
     });
 
     // Auto-scroll to response
-    Future.delayed(Duration(milliseconds: 500), () {
+    Future.delayed(const Duration(milliseconds: 500), () {
       _scrollController.scrollTo(
         index: 5,
-        duration: Duration(seconds: 1),
+        duration: const Duration(seconds: 1),
         curve: Curves.easeInOut,
       );
     });
@@ -130,7 +140,6 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
         backgroundColor: Colors.transparent,
         appBar: AppBar(
           centerTitle: true,
-          title: const Text("AI Script Generator"),
           backgroundColor: Colors.cyan,
           elevation: 0.7,
         ),
@@ -166,104 +175,91 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
                     const SizedBox(height: 16),
 
                     // Input Fields
-                    TextFormField(
-                      controller: scriptController,
-                      decoration: const InputDecoration(
-                        labelText: 'Enter your video topic',
-                        border: OutlineInputBorder(),
+                    Form(
+                      key: _formKey,
+                      child: TextFormField(
+                        controller: scriptController,
+                        decoration: const InputDecoration(
+                          labelText: 'Enter your video topic',
+                          border: OutlineInputBorder(),
+                        ),
+                        onFieldSubmitted: (_) => generateScript(),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            // return 'Please enter a topic';
+                            ScaffoldMessenger(
+                                child: const SnackBar(
+                              content: Text("Please enter a topic!"),
+                            ));
+                          }
+                          return null;
+                        },
                       ),
-                      onFieldSubmitted: (_) => generateScript(),
                     ),
                     const SizedBox(height: 16),
-
-                    // Dropdowns
-                    DropdownButtonFormField<String>(
+                    AppDropdown(
+                      label: "Select Tone",
                       value: selectedTone,
-                      decoration: InputDecoration(
-                          labelText: "Select Tone",
-                          fillColor: AppResources.colors.tealLight),
-                      items: toneOptions.map((tone) {
-                        return DropdownMenuItem(value: tone, child: Text(tone));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedTone = value!);
-                      },
+                      items: toneOptions,
+                      onChanged: (value) =>
+                          setState(() => selectedTone = value!),
                     ),
                     const SizedBox(height: 10),
-
-                    DropdownButtonFormField<String>(
+                    AppDropdown(
+                      label: "Select Style",
                       value: selectedStyle,
-                      decoration:
-                          const InputDecoration(labelText: "Select Style"),
-                      items: styleOptions.map((style) {
-                        return DropdownMenuItem(
-                            value: style, child: Text(style));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedStyle = value!);
-                      },
+                      items: styleOptions,
+                      onChanged: (value) =>
+                          setState(() => selectedStyle = value!),
                     ),
                     const SizedBox(height: 10),
-
-                    DropdownButtonFormField<String>(
+                    AppDropdown(
+                      label: "Select Length",
                       value: selectedLength,
-                      decoration: InputDecoration(
-                          labelText: "Select Length",
-                          fillColor: AppResources.colors.tealLight,
-                          hoverColor: Colors.black87),
-                      items: lengthOptions.map((length) {
-                        return DropdownMenuItem(
-                            value: length, child: Text(length));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedLength = value!);
-                      },
+                      items: lengthOptions,
+                      onChanged: (value) =>
+                          setState(() => selectedLength = value!),
                     ),
                     const SizedBox(height: 10),
-
-                    // Dropdown for Age Group
-                    DropdownButtonFormField<String>(
+                    AppDropdown(
+                      label: "Select Age Group",
                       value: selectedAgeGroup,
-                      decoration: InputDecoration(
-                          labelText: "Select Age Group",
-                          fillColor: AppResources.colors.tealLight),
-                      items: ageGroupOptions.map((ageGroup) {
-                        return DropdownMenuItem(
-                            value: ageGroup, child: Text(ageGroup));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedAgeGroup = value!);
-                      },
+                      items: ageGroupOptions,
+                      onChanged: (value) =>
+                          setState(() => selectedAgeGroup = value!),
                     ),
                     const SizedBox(height: 10),
-
-                    // Dropdown for Video Type
-                    DropdownButtonFormField<String>(
+                    AppDropdown(
+                      label: "Select Video Type",
                       value: selectedVideoType,
-                      decoration: InputDecoration(
-                          labelText: "Select Video Type",
-                          fillColor: AppResources.colors.tealLight),
-                      items: videoTypeOptions.map((videoType) {
-                        return DropdownMenuItem(
-                            value: videoType, child: Text(videoType));
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() => selectedVideoType = value!);
-                      },
+                      items: videoTypeOptions,
+                      onChanged: (value) =>
+                          setState(() => selectedVideoType = value!),
                     ),
                     const SizedBox(height: 16),
-
                     // Generate Button
                     Center(
                       child: ElevatedButton(
-                        onPressed: isLoading ? null : generateScript,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppResources.colors.white,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 50, vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        onPressed: generateScript,
                         child: isLoading
                             ? const CircularProgressIndicator(
                                 color: Colors.white)
-                            : const Text("Generate Script"),
+                            : Text("Generate Script",
+                                style: TextStyle(
+                                    color: AppResources.colors.darkGrey)),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(
+                      height: 16,
+                    ),
                   ],
                 );
               } else if (index == 5 && generatedScript != null) {
