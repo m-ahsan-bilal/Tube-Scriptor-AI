@@ -42,11 +42,11 @@ List<RouteBase> appRoutesList = [
     name: "settings page",
     builder: (context, state) => const SettingsPage(),
   ),
-  GoRoute(
-    path: "/cam",
-    name: "cam page",
-    builder: (context, state) => PhotoScreen(cameras),
-  ),
+  // GoRoute(
+  //   path: "/cam",
+  //   name: "cam page",
+  //   builder: (context, state) => PhotoScreen(cameras),
+  // ),
   GoRoute(
     path: "/video_screen",
     name: "video page",

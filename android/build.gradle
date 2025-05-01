@@ -1,15 +1,23 @@
-allprojects {
-   tasks.withType(JavaCompile).configureEach {
-        it.sourceCompatibility = JavaVersion.VERSION_17
-        it.targetCompatibility = JavaVersion.VERSION_17
-    }
-    repositories{
+buildscript {
+    repositories {
         google()
         mavenCentral()
     }
-    
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.1'
+    }
 }
 
+allprojects {
+    tasks.withType(JavaCompile).configureEach {
+        it.sourceCompatibility = JavaVersion.VERSION_17
+        it.targetCompatibility = JavaVersion.VERSION_17
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
 
 rootProject.buildDir = "../build"
 subprojects {
@@ -22,5 +30,3 @@ subprojects {
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
 }
-
-

@@ -23,7 +23,7 @@ class _ScriptorPageState extends State<ScriptorPage> {
 
   // services
   final ScriptGeneratorService _scriptService = ScriptGeneratorService();
-//  variables
+  //  variables
   String? generatedScript;
   bool isLoading = false;
 
@@ -41,32 +41,32 @@ class _ScriptorPageState extends State<ScriptorPage> {
     "Professional",
     "Casual",
     "Exciting",
-    "Inspirational"
+    "Inspirational",
   ];
   final List<String> styleOptions = [
     "Storytelling",
     "Educational",
     "Persuasive",
-    "Conversational"
+    "Conversational",
   ];
   final List<String> lengthOptions = [
     "Short (1-2 min)",
     "Medium (3-5 min)",
-    "Long (6+ min)"
+    "Long (6+ min)",
   ];
   final List<String> ageGroupOptions = [
     "12-17",
     "18-25",
     "30-40",
     "40-45",
-    "46+"
+    "46+",
   ];
   final List<String> videoTypeOptions = [
     "Explainer",
     "Tutorial",
     "Review",
     "Vlog",
-    "Interview"
+    "Interview",
   ];
 
   @override
@@ -79,7 +79,7 @@ class _ScriptorPageState extends State<ScriptorPage> {
     debugPrint("Video Type Options: $videoTypeOptions");
   }
 
-// generate prompt
+  // generate prompt
   String buildPrompt() {
     String topic = scriptController.text.trim();
 
@@ -89,9 +89,9 @@ class _ScriptorPageState extends State<ScriptorPage> {
 
     return """
 I am a Youtuber and I want to create a video about $topic.
-Generate a $selectedTone.toLowerCase() YouTube script in a $selectedStyle.toLowerCase() style 
+Generate a $selectedTone YouTube script in a $selectedStyle style 
 for a video about '$topic'. The target audience is $selectedAgeGroup years old, and the video type is $selectedVideoType. 
-Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
+Keep the length $selectedLength. $additionalDetails
 """;
   }
 
@@ -144,7 +144,7 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
           elevation: 0.7,
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => context.go("/cam"),
+          onPressed: () => context.go("/video_screen"),
           label: const Icon(Icons.camera_alt_sharp),
         ),
         body: Padding(
@@ -188,9 +188,10 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
                           if (value == null || value.isEmpty) {
                             // return 'Please enter a topic';
                             ScaffoldMessenger(
-                                child: const SnackBar(
-                              content: Text("Please enter a topic!"),
-                            ));
+                              child: const SnackBar(
+                                content: Text("Please enter a topic!"),
+                              ),
+                            );
                           }
                           return null;
                         },
@@ -201,40 +202,40 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
                       label: "Select Tone",
                       value: selectedTone,
                       items: toneOptions,
-                      onChanged: (value) =>
-                          setState(() => selectedTone = value!),
+                      onChanged:
+                          (value) => setState(() => selectedTone = value!),
                     ),
                     const SizedBox(height: 10),
                     AppDropdown(
                       label: "Select Style",
                       value: selectedStyle,
                       items: styleOptions,
-                      onChanged: (value) =>
-                          setState(() => selectedStyle = value!),
+                      onChanged:
+                          (value) => setState(() => selectedStyle = value!),
                     ),
                     const SizedBox(height: 10),
                     AppDropdown(
                       label: "Select Length",
                       value: selectedLength,
                       items: lengthOptions,
-                      onChanged: (value) =>
-                          setState(() => selectedLength = value!),
+                      onChanged:
+                          (value) => setState(() => selectedLength = value!),
                     ),
                     const SizedBox(height: 10),
                     AppDropdown(
                       label: "Select Age Group",
                       value: selectedAgeGroup,
                       items: ageGroupOptions,
-                      onChanged: (value) =>
-                          setState(() => selectedAgeGroup = value!),
+                      onChanged:
+                          (value) => setState(() => selectedAgeGroup = value!),
                     ),
                     const SizedBox(height: 10),
                     AppDropdown(
                       label: "Select Video Type",
                       value: selectedVideoType,
                       items: videoTypeOptions,
-                      onChanged: (value) =>
-                          setState(() => selectedVideoType = value!),
+                      onChanged:
+                          (value) => setState(() => selectedVideoType = value!),
                     ),
                     const SizedBox(height: 16),
                     // Generate Button
@@ -243,23 +244,28 @@ Keep the length ${selectedLength.toLowerCase()}. $additionalDetails
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppResources.colors.white,
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 50, vertical: 20),
+                            horizontal: 50,
+                            vertical: 20,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                         ),
                         onPressed: generateScript,
-                        child: isLoading
-                            ? const CircularProgressIndicator(
-                                color: Colors.white)
-                            : Text("Generate Script",
-                                style: TextStyle(
-                                    color: AppResources.colors.darkGrey)),
+                        child:
+                            isLoading
+                                ? const CircularProgressIndicator(
+                                  color: Colors.white,
+                                )
+                                : Text(
+                                  "Generate Script",
+                                  style: TextStyle(
+                                    color: AppResources.colors.darkGrey,
+                                  ),
+                                ),
                       ),
                     ),
-                    SizedBox(
-                      height: 16,
-                    ),
+                    SizedBox(height: 16),
                   ],
                 );
               } else if (index == 5 && generatedScript != null) {

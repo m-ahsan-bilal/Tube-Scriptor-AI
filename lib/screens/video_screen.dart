@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:camera/camera.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+// import 'package:gallery_saver/gallery_saver.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
@@ -63,7 +63,7 @@ class _VideoScreenState extends State<VideoScreen> {
   }
 
   void _switchCamera() async {
-    if (controller != null) await controller.dispose();
+    await controller.dispose();
     _selectedCameraIndex = (_selectedCameraIndex + 1) % widget.cameras.length;
     await _initCamera(_selectedCameraIndex);
   }
@@ -132,7 +132,8 @@ class _VideoScreenState extends State<VideoScreen> {
         if (_videoPath.isNotEmpty) {
           final File file = File(videoFile.path);
           await file.copy(_videoPath);
-          await GallerySaver.saveVideo(_videoPath);
+          // await GallerySaver.saveVideo(_videoPath);
+          debugPrint("the path is$_videoPath");
           // play a sound effect
           player.setAsset('assets/music/.mp3');
           player.play();
@@ -292,7 +293,7 @@ class _VideoScreenState extends State<VideoScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 _capturedImage != null
-                                    ? Container(
+                                    ? SizedBox(
                                         width: 50,
                                         height: 50,
                                         child: Image.file(
