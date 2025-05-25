@@ -9,16 +9,9 @@ class ScriptGeneratorService {
   GenerativeModel? _model; // Make the model potentially null
 
   ScriptGeneratorService() {
-    // Initialize the model only if the API key was found
+    // initialize the model if not null
     if (_apiKey != null && _apiKey.isNotEmpty) {
-      _model = GenerativeModel(
-        // *** Use the updated model name ***
-        model: "gemini-2.0-flash", // <-- CHANGE THIS LINE
-        apiKey: _apiKey,
-        // Optional: You can add safety settings and generation config here if needed
-        // safetySettings: [ SafetySetting(...) ],
-        // generationConfig: GenerationConfig(...),
-      );
+      _model = GenerativeModel(model: "gemini-2.0-flash", apiKey: _apiKey);
     } else {
       // Handle the case where the API key is missing
       debugPrint("Error: GEMINI_API_KEY not found in .env file.");
