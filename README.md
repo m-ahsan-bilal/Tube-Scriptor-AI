@@ -1,4 +1,4 @@
-Tube Scriptor AI 🎬🤖
+# Tube Scriptor AI 🎬🤖
 
 A Flutter-based mobile application that helps YouTubers generate customized video scripts using Google's Gemini API and prompt engineering. The app also integrates real-time camera features, speech-to-text, and smart script scrolling to streamline video production.
 
